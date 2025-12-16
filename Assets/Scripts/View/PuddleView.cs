@@ -25,7 +25,7 @@ namespace PuddleClicker.View
 
         private void Update()
         {
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space))
             {
                 // スクリーン座標をビューポート座標（0-1）に変換
                 var viewportPoint = new Vector3(Input.mousePosition.x / Screen.width, Input.mousePosition.y / Screen.height, 0f);

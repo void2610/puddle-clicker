@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using PuddleClicker.Model;
 
 namespace PuddleClicker.View
 {
@@ -16,10 +15,10 @@ namespace PuddleClicker.View
         private readonly List<ShopItemView> _dropItemViews = new();
         private readonly List<ShopItemView> _companionViews = new();
 
-        public void Initialize()
+        public void Initialize(int companionCount)
         {
             GenerateDropItemViews();
-            GenerateCompanionViews();
+            GenerateCompanionViews(companionCount);
         }
 
         private void GenerateDropItemViews()
@@ -29,9 +28,9 @@ namespace PuddleClicker.View
             _dropItemViews.Add(view);
         }
 
-        private void GenerateCompanionViews()
+        private void GenerateCompanionViews(int count)
         {
-            for (var i = 0; i < UpgradeDefinitions.Companions.Length; i++)
+            for (var i = 0; i < count; i++)
             {
                 var view = Instantiate(itemPrefab, companionContainer);
                 _companionViews.Add(view);

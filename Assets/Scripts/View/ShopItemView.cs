@@ -14,32 +14,22 @@ namespace PuddleClicker.View
         [SerializeField] private TextMeshProUGUI buttonText;
 
         public Observable<Unit> OnActionClicked => actionButton.OnClickAsObservable();
-        public int ItemIndex => _itemIndex;
 
-        private int _itemIndex;
-
-        public void Initialize(int index, string name, long price, string buttonLabel)
+        public void Initialize(string itemName, long price, string buttonLabel)
         {
-            _itemIndex = index;
-            nameText.text = name;
+            nameText.text = itemName;
             UpdatePrice(price);
+            countText.gameObject.SetActive(false);
             buttonText.text = buttonLabel;
-
-            if (countText)
-                countText.gameObject.SetActive(false);
         }
 
+        public void SetButtonInteractable(bool interactable) => actionButton.interactable = interactable;
         public void UpdatePrice(long price) => priceText.text = price > 0 ? $"{price:N0}" : "所持";
 
         public void UpdateCount(int count)
         {
-            if (!countText) return;
             countText.gameObject.SetActive(true);
             countText.text = $"×{count}";
         }
-
-        public void SetButtonInteractable(bool interactable) => actionButton.interactable = interactable;
-
-        public void SetButtonLabel(string label) => buttonText.text = label;
     }
 }

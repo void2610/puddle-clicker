@@ -1,90 +1,79 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using R3;
 
 namespace PuddleClicker.Model
 {
     public class UpgradeModel : IDisposable
     {
-        // 現在の落とすものレベル（最高レベルが自動適用）
-        public ReadOnlyReactiveProperty<DropItemType> CurrentDropItem => _currentDropItem;
-        public ReadOnlyReactiveProperty<Dictionary<CompanionType, int>> CompanionCounts => _companionCounts;
+        public ReadOnlyReactiveProperty<int> CurrentDropItemLevel => _currentDropItemLevel;
+        public ReadOnlyReactiveProperty<int[]> CompanionCounts => _companionCounts;
 
-        private readonly ReactiveProperty<DropItemType> _currentDropItem;
-        private readonly ReactiveProperty<Dictionary<CompanionType, int>> _companionCounts;
+        private readonly DropItemSettings _dropItemSettings;
+        private readonly CompanionSettings _companionSettings;
+        private readonly GameBalanceSettings _balanceSettings;
+        private readonly ReactiveProperty<int> _currentDropItemLevel;
+        private readonly ReactiveProperty<int[]> _companionCounts;
 
-        public UpgradeModel()
+        public UpgradeModel(DropItemSettings dropItemSettings, CompanionSettings companionSettings, GameBalanceSettings balanceSettings)
         {
-            // 初期状態: 指先
-            _currentDropItem = new ReactiveProperty<DropItemType>(DropItemType.Finger);
-
-            // 初期状態: 仲間は0匹
-            var initialCounts = new Dictionary<CompanionType, int>();
-            foreach (CompanionType type in Enum.GetValues(typeof(CompanionType)))
-            {
-                initialCounts[type] = 0;
-            }
-            _companionCounts = new ReactiveProperty<Dictionary<CompanionType, int>>(initialCounts);
+            _dropItemSettings = dropItemSettings;
+            _companionSettings = companionSettings;
+            _balanceSettings = balanceSettings;
+            _currentDropItemLevel = new ReactiveProperty<int>(0);
+            _companionCounts = new ReactiveProperty<int[]>(new int[companionSettings.Count]);
         }
 
-        public bool CanUpgradeDropItem()
-        {
-            var currentLevel = (int)_currentDropItem.Value;
-            return currentLevel < UpgradeDefinitions.DropItems.Length - 1;
-        }
+        public bool CanUpgradeDropItem() => _currentDropItemLevel.Value < _dropItemSettings.Count - 1;
 
-        public DropItemType? GetNextDropItem()
-        {
-            if (!CanUpgradeDropItem()) return null;
-            return (DropItemType)((int)_currentDropItem.Value + 1);
-        }
+        public int? GetNextDropItemLevel() => CanUpgradeDropItem() ? _currentDropItemLevel.Value + 1 : null;
 
         public long GetNextDropItemPrice()
         {
-            var next = GetNextDropItem();
-            if (next == null) return 0;
-            return UpgradeDefinitions.DropItems[(int)next.Value].Price;
+            var next = GetNextDropItemLevel();
+            return next == null ? 0 : _dropItemSettings.Items[next.Value].Price;
         }
 
         public void UpgradeDropItem()
         {
-            if (!CanUpgradeDropItem()) return;
-            _currentDropItem.Value = (DropItemType)((int)_currentDropItem.Value + 1);
+            if (CanUpgradeDropItem())
+                _currentDropItemLevel.Value++;
         }
 
-        public int GetCurrentClickEffect() => UpgradeDefinitions.DropItems[(int)_currentDropItem.Value].Effect;
+        public int GetCurrentClickEffect() => _dropItemSettings.Items[_currentDropItemLevel.Value].Effect;
 
-        public int GetCompanionCount(CompanionType type) => _companionCounts.Value.TryGetValue(type, out var count) ? count : 0;
+        public string GetDropItemName(int level) => _dropItemSettings.Items[level].Name;
 
-        public void AddCompanion(CompanionType type)
+        public int GetCompanionCount(int index) => _companionCounts.Value[index];
+
+        public void AddCompanion(int index)
         {
-            var newDict = new Dictionary<CompanionType, int>(_companionCounts.Value);
-            newDict[type] = GetCompanionCount(type) + 1;
-            _companionCounts.Value = newDict;
+            var newCounts = (int[])_companionCounts.Value.Clone();
+            newCounts[index]++;
+            _companionCounts.Value = newCounts;
         }
 
         public float GetTotalDropsPerSecond()
         {
-            float total = 0f;
-            foreach (var companion in UpgradeDefinitions.Companions)
-            {
-                var count = GetCompanionCount(companion.Type);
-                total += companion.Effect * count;
-            }
+            var total = 0f;
+            for (var i = 0; i < _companionSettings.Count; i++)
+                total += _companionSettings.Companions[i].Effect * _companionCounts.Value[i];
             return total;
         }
 
-        public long GetCompanionPrice(CompanionType type)
+        public long GetCompanionPrice(int index)
         {
-            var basePrice = UpgradeDefinitions.Companions.First(x => x.Type == type).BasePrice;
-            var count = GetCompanionCount(type);
-            return (long)(basePrice * Math.Pow(UpgradeDefinitions.PriceMultiplier, count));
+            var basePrice = _companionSettings.Companions[index].BasePrice;
+            var count = _companionCounts.Value[index];
+            return (long)(basePrice * Math.Pow(_balanceSettings.PriceMultiplier, count));
         }
+
+        public string GetCompanionName(int index) => _companionSettings.Companions[index].Name;
+
+        public int CompanionCount => _companionSettings.Count;
 
         public void Dispose()
         {
-            _currentDropItem.Dispose();
+            _currentDropItemLevel.Dispose();
             _companionCounts.Dispose();
         }
     }

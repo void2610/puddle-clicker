@@ -17,7 +17,7 @@ namespace PuddleClicker.Presenter
             _gameModel = gameModel;
             _upgradeModel = upgradeModel;
             _shopView = UnityEngine.Object.FindFirstObjectByType<ShopView>();
-            _shopView.Initialize();
+            _shopView.Initialize(_upgradeModel.CompanionCount);
 
             InitializeDropItemView();
             InitializeCompanionViews();
@@ -26,48 +26,31 @@ namespace PuddleClicker.Presenter
 
         private void InitializeDropItemView()
         {
-            // 落とすものは1つのビューでアップグレード表示
             var view = _shopView.DropItemViews[0];
             UpdateDropItemView(view);
-
-            view.OnActionClicked
-                .Subscribe(_ => OnDropItemUpgrade())
-                .AddTo(_disposables);
+            view.OnActionClicked.Subscribe(_ => OnDropItemUpgrade()).AddTo(_disposables);
         }
 
         private void InitializeCompanionViews()
         {
-            for (var i = 0; i < _shopView.CompanionViews.Count && i < UpgradeDefinitions.Companions.Length; i++)
+            for (var i = 0; i < _shopView.CompanionViews.Count; i++)
             {
+                var index = i;
                 var view = _shopView.CompanionViews[i];
-                var companion = UpgradeDefinitions.Companions[i];
-                var companionType = companion.Type;
-
-                view.Initialize(i, companion.Name, _upgradeModel.GetCompanionPrice(companionType), "購入");
-                view.UpdateCount(_upgradeModel.GetCompanionCount(companionType));
-
-                view.OnActionClicked
-                    .Subscribe(_ => OnCompanionPurchase(companionType))
-                    .AddTo(_disposables);
+                view.Initialize(_upgradeModel.GetCompanionName(i), _upgradeModel.GetCompanionPrice(i), "購入");
+                view.UpdateCount(_upgradeModel.GetCompanionCount(i));
+                view.OnActionClicked.Subscribe(_ => OnCompanionPurchase(index)).AddTo(_disposables);
             }
         }
 
         private void SubscribeToModelChanges()
         {
             // 所持しずくが変わったらボタンの有効状態を更新
-            _gameModel.Drops
-                .Subscribe(_ => UpdateButtonStates())
-                .AddTo(_disposables);
-
+            _gameModel.Drops.Subscribe(_ => UpdateButtonStates()).AddTo(_disposables);
             // 落とすものレベルが変わったら表示を更新
-            _upgradeModel.CurrentDropItem
-                .Subscribe(_ => UpdateDropItemViews())
-                .AddTo(_disposables);
-
+            _upgradeModel.CurrentDropItemLevel.Subscribe(_ => UpdateDropItemViews()).AddTo(_disposables);
             // 仲間の数が変わったら表示を更新
-            _upgradeModel.CompanionCounts
-                .Subscribe(_ => UpdateCompanionViews())
-                .AddTo(_disposables);
+            _upgradeModel.CompanionCounts.Subscribe(_ => UpdateCompanionViews()).AddTo(_disposables);
         }
 
         private void OnDropItemUpgrade()
@@ -80,12 +63,12 @@ namespace PuddleClicker.Presenter
             }
         }
 
-        private void OnCompanionPurchase(CompanionType type)
+        private void OnCompanionPurchase(int index)
         {
-            var price = _upgradeModel.GetCompanionPrice(type);
+            var price = _upgradeModel.GetCompanionPrice(index);
             if (_gameModel.TrySpendDrops(price))
             {
-                _upgradeModel.AddCompanion(type);
+                _upgradeModel.AddCompanion(index);
                 _gameModel.SetDropsPerSecond(_upgradeModel.GetTotalDropsPerSecond());
             }
         }
@@ -101,11 +84,10 @@ namespace PuddleClicker.Presenter
             dropItemView.SetButtonInteractable(canUpgrade && drops >= dropItemPrice);
 
             // 仲間ボタン
-            for (var i = 0; i < _shopView.CompanionViews.Count && i < UpgradeDefinitions.Companions.Length; i++)
+            for (var i = 0; i < _shopView.CompanionViews.Count; i++)
             {
                 var view = _shopView.CompanionViews[i];
-                var companion = UpgradeDefinitions.Companions[i];
-                var price = _upgradeModel.GetCompanionPrice(companion.Type);
+                var price = _upgradeModel.GetCompanionPrice(i);
                 view.SetButtonInteractable(drops >= price);
             }
         }
@@ -118,37 +100,30 @@ namespace PuddleClicker.Presenter
 
         private void UpdateDropItemView(ShopItemView view)
         {
-            var current = _upgradeModel.CurrentDropItem.CurrentValue;
-            var currentName = UpgradeDefinitions.DropItems[(int)current].Name;
+            var currentLevel = _upgradeModel.CurrentDropItemLevel.CurrentValue;
+            var currentName = _upgradeModel.GetDropItemName(currentLevel);
 
             if (_upgradeModel.CanUpgradeDropItem())
             {
-                var next = _upgradeModel.GetNextDropItem()!.Value;
-                var nextName = UpgradeDefinitions.DropItems[(int)next].Name;
+                var nextName = _upgradeModel.GetDropItemName(_upgradeModel.GetNextDropItemLevel()!.Value);
                 var nextPrice = _upgradeModel.GetNextDropItemPrice();
-
-                view.Initialize(0, $"{currentName} → {nextName}", nextPrice, "強化");
+                view.Initialize($"{currentName} → {nextName}", nextPrice, "強化");
             }
             else
             {
-                view.Initialize(0, $"{currentName}（最大）", 0, "最大");
+                view.Initialize($"{currentName}（最大）", 0, "最大");
                 view.SetButtonInteractable(false);
             }
         }
 
         private void UpdateCompanionViews()
         {
-            for (var i = 0; i < _shopView.CompanionViews.Count && i < UpgradeDefinitions.Companions.Length; i++)
+            for (var i = 0; i < _shopView.CompanionViews.Count; i++)
             {
                 var view = _shopView.CompanionViews[i];
-                var companion = UpgradeDefinitions.Companions[i];
-                var count = _upgradeModel.GetCompanionCount(companion.Type);
-                var price = _upgradeModel.GetCompanionPrice(companion.Type);
-
-                view.UpdateCount(count);
-                view.UpdatePrice(price);
+                view.UpdateCount(_upgradeModel.GetCompanionCount(i));
+                view.UpdatePrice(_upgradeModel.GetCompanionPrice(i));
             }
-
             UpdateButtonStates();
         }
 
