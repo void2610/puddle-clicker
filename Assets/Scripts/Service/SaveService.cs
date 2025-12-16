@@ -13,6 +13,7 @@ namespace PuddleClicker.Service
         private const string SAVE_KEY = "puddle_clicker_save";
         private const float AUTO_SAVE_INTERVAL = 5f;
 
+        public long PendingOfflineReward { get; private set; }
         private readonly GameModel _gameModel;
         private readonly UpgradeModel _upgradeModel;
         private readonly CompositeDisposable _disposables = new();
@@ -56,7 +57,8 @@ namespace PuddleClicker.Service
             {
                 drops = _gameModel.Drops.CurrentValue,
                 dropItemLevel = _upgradeModel.CurrentDropItemLevel.CurrentValue,
-                companionCounts = _upgradeModel.CompanionCounts.CurrentValue
+                companionCounts = _upgradeModel.CompanionCounts.CurrentValue,
+                lastSaveTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
             };
             DataPersistence.SaveData(SAVE_KEY, JsonUtility.ToJson(data));
         }
@@ -69,13 +71,28 @@ namespace PuddleClicker.Service
             var data = JsonUtility.FromJson<SaveData>(json);
 
             // データ復元
-            _gameModel.SetDrops(data.drops);
             _upgradeModel.SetDropItemLevel(data.dropItemLevel);
             _upgradeModel.SetCompanionCounts(data.companionCounts);
 
             // 派生値を再計算
             _gameModel.SetDropsPerClick(_upgradeModel.GetCurrentClickEffect());
             _gameModel.SetDropsPerSecond(_upgradeModel.GetTotalDropsPerSecond());
+
+            // 放置報酬を計算・付与
+            var offlineReward = CalculateOfflineReward(data.lastSaveTimestamp);
+            _gameModel.SetDrops(data.drops + offlineReward);
+            PendingOfflineReward = offlineReward;
+        }
+
+        private long CalculateOfflineReward(long lastSaveTimestamp)
+        {
+            if (lastSaveTimestamp <= 0) return 0;
+
+            var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            var elapsedSeconds = now - lastSaveTimestamp;
+            var dropsPerSecond = _upgradeModel.GetTotalDropsPerSecond();
+
+            return (long)(elapsedSeconds * dropsPerSecond);
         }
 
         public void Dispose()
@@ -87,11 +104,12 @@ namespace PuddleClicker.Service
         }
 
         [Serializable]
-        private class SaveData
+        private sealed class SaveData
         {
             public long drops;
             public int dropItemLevel;
             public int[] companionCounts;
+            public long lastSaveTimestamp;
         }
     }
 }
