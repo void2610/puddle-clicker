@@ -9,9 +9,11 @@ public class MainLifetimeScope : LifetimeScope
     {
         // Model登録
         builder.Register<GameModel>(Lifetime.Singleton);
+        builder.Register<UpgradeModel>(Lifetime.Singleton);
 
         // Presenter登録（エントリーポイント）
         builder.RegisterEntryPoint<GamePresenter>().AsSelf();
+        builder.Register<ShopPresenter>(Lifetime.Singleton);
         
         builder.RegisterEntryPoint<GameInitializer>();
     }
