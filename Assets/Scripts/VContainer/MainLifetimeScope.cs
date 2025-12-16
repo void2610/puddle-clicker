@@ -3,6 +3,7 @@ using VContainer;
 using VContainer.Unity;
 using PuddleClicker.Model;
 using PuddleClicker.Presenter;
+using PuddleClicker.Service;
 
 public class MainLifetimeScope : LifetimeScope
 {
@@ -20,6 +21,9 @@ public class MainLifetimeScope : LifetimeScope
         // Model登録
         builder.Register<GameModel>(Lifetime.Singleton);
         builder.Register<UpgradeModel>(Lifetime.Singleton);
+
+        // Service登録
+        builder.Register<SaveService>(Lifetime.Singleton);
 
         // Presenter登録（エントリーポイント）
         builder.RegisterEntryPoint<GamePresenter>().AsSelf();

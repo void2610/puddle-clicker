@@ -39,6 +39,10 @@ namespace PuddleClicker.Model
                 _currentDropItemLevel.Value++;
         }
 
+        public void SetDropItemLevel(int level) => _currentDropItemLevel.Value = level;
+
+        public void SetCompanionCounts(int[] counts) => _companionCounts.Value = (int[])counts.Clone();
+
         public int GetCurrentClickEffect() => _dropItemSettings.Items[_currentDropItemLevel.Value].Effect;
 
         public string GetDropItemName(int level) => _dropItemSettings.Items[level].Name;
