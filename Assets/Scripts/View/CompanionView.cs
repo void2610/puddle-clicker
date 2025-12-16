@@ -18,12 +18,7 @@ namespace PuddleClicker.View
         [SerializeField] private float jumpHeight = 1f;
 
         private readonly List<CompanionInstance> _activeCompanions = new();
-        private CancellationTokenSource _cts;
-
-        private void Awake()
-        {
-            _cts = new CancellationTokenSource();
-        }
+        private readonly CancellationTokenSource _cts = new();
 
         private void OnDestroy()
         {
