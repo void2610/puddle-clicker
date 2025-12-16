@@ -11,6 +11,8 @@ public class MainLifetimeScope : LifetimeScope
         builder.Register<GameModel>(Lifetime.Singleton);
 
         // Presenter登録（エントリーポイント）
-        builder.RegisterEntryPoint<GamePresenter>();
+        builder.RegisterEntryPoint<GamePresenter>().AsSelf();
+        
+        builder.RegisterEntryPoint<GameInitializer>();
     }
 }

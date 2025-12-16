@@ -7,11 +7,10 @@ using PuddleClicker.View;
 
 namespace PuddleClicker.Presenter
 {
-    public class GamePresenter : IStartable, ITickable, IDisposable
+    public class GamePresenter : ITickable, IDisposable
     {
         private readonly GameModel _gameModel;
         private readonly PuddleView _puddleView;
-        private readonly GameUIView _gameUIView;
         private readonly CompositeDisposable _disposables = new();
 
         // 自動生成用の蓄積時間
@@ -21,25 +20,13 @@ namespace PuddleClicker.Presenter
         {
             _gameModel = gameModel;
             _puddleView = UnityEngine.Object.FindFirstObjectByType<PuddleView>();
-            _gameUIView = UnityEngine.Object.FindFirstObjectByType<GameUIView>();
-        }
-
-        public void Start()
-        {
-            // クリックイベントの購読
-            _puddleView.OnClicked
-                .Subscribe(OnPuddleClicked)
-                .AddTo(_disposables);
-
-            // しずく数の変更を購読してUIを更新
-            _gameModel.Drops
-                .Subscribe(drops => _gameUIView.UpdateDropsDisplay(drops))
-                .AddTo(_disposables);
-
-            // 毎秒獲得量の変更を購読してUIを更新
-            _gameModel.DropsPerSecond
-                .Subscribe(dps => _gameUIView.UpdateDropsPerSecondDisplay(dps))
-                .AddTo(_disposables);
+            var gameUIView = UnityEngine.Object.FindFirstObjectByType<GameUIView>();
+            
+            // 操作イベントの購読
+            _puddleView.OnClicked.Subscribe(OnPuddleClicked).AddTo(_disposables);
+            // UI更新
+            _gameModel.Drops.Subscribe(drops => gameUIView.UpdateDropsDisplay(drops)).AddTo(_disposables);
+            _gameModel.DropsPerSecond.Subscribe(dps => gameUIView.UpdateDropsPerSecondDisplay(dps)).AddTo(_disposables);
         }
 
         public void Tick()
@@ -64,7 +51,6 @@ namespace PuddleClicker.Presenter
             // しずくを獲得
             var amount = _gameModel.DropsPerClick.CurrentValue;
             _gameModel.AddDrops(amount);
-
             // 波紋エフェクトを再生
             _puddleView.PlayRippleEffect(position);
         }
