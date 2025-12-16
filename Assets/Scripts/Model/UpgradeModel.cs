@@ -43,6 +43,8 @@ namespace PuddleClicker.Model
 
         public string GetDropItemName(int level) => _dropItemSettings.Items[level].Name;
 
+        public DropItemData GetCurrentDropItem() => _dropItemSettings.Items[_currentDropItemLevel.Value];
+
         public int GetCompanionCount(int index) => _companionCounts.Value[index];
 
         public void AddCompanion(int index)

@@ -10,18 +10,20 @@ namespace PuddleClicker.Presenter
     public class GamePresenter : ITickable, IDisposable
     {
         private readonly GameModel _gameModel;
+        private readonly UpgradeModel _upgradeModel;
         private readonly PuddleView _puddleView;
         private readonly CompositeDisposable _disposables = new();
 
         // 自動生成用の蓄積時間
         private float _accumulatedTime;
 
-        public GamePresenter(GameModel gameModel)
+        public GamePresenter(GameModel gameModel, UpgradeModel upgradeModel)
         {
             _gameModel = gameModel;
+            _upgradeModel = upgradeModel;
             _puddleView = UnityEngine.Object.FindFirstObjectByType<PuddleView>();
             var gameUIView = UnityEngine.Object.FindFirstObjectByType<GameUIView>();
-            
+
             // 操作イベントの購読
             _puddleView.OnClicked.Subscribe(OnPuddleClicked).AddTo(_disposables);
             // UI更新
@@ -51,8 +53,10 @@ namespace PuddleClicker.Presenter
             // しずくを獲得
             var amount = _gameModel.DropsPerClick.CurrentValue;
             _gameModel.AddDrops(amount);
-            // 波紋エフェクトを再生
-            _puddleView.PlayRippleEffect(position);
+
+            // 現在の落とすものの波紋パラメータを取得
+            var dropItem = _upgradeModel.GetCurrentDropItem();
+            _puddleView.PlayRippleEffect(position, dropItem.RippleScale, dropItem.RippleDuration, dropItem.RippleCount);
         }
 
         public void Dispose() => _disposables.Dispose();

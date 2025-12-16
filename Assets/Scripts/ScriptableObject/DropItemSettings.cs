@@ -19,8 +19,16 @@ namespace PuddleClicker.Model
         [SerializeField] private int effect;
         [SerializeField] private long price;
 
+        [Header("波紋演出")]
+        [SerializeField] private float rippleScale = 1f;
+        [SerializeField] private float rippleDuration = 0.8f;
+        [SerializeField] private int rippleCount = 1;
+
         public string Name => name;
         public int Effect => effect;
         public long Price => price;
+        public float RippleScale => rippleScale;
+        public float RippleDuration => rippleDuration;
+        public int RippleCount => rippleCount;
     }
 }

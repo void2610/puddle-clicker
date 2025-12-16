@@ -13,15 +13,31 @@ MonoBehaviour:
   m_Name: CompanionSettings
   m_EditorClassIdentifier: 
   companions:
-  - name: アメンボ
+  - name: "\u30A2\u30E1\u30F3\u30DC"
     effect: 1
     basePrice: 15
-  - name: 落ち葉
+    prefab: {fileID: 134833605207454182, guid: 8461492f472354223b47f4c33dbe65e4, type: 3}
+    animationType: 0
+    animationSpeed: 1
+    createsRipple: 1
+  - name: "\u843D\u3061\u8449"
     effect: 3
     basePrice: 100
-  - name: 木から落ちる雫
+    prefab: {fileID: 134833605207454182, guid: bc699ee71f7c6472b8285cbb442a196c, type: 3}
+    animationType: 1
+    animationSpeed: 1
+    createsRipple: 1
+  - name: "\u6728\u304B\u3089\u843D\u3061\u308B\u96EB"
     effect: 10
     basePrice: 500
-  - name: 跳ねるカエル
+    prefab: {fileID: 134833605207454182, guid: d1b21f8f38ba2469e987fc2b5b2ea0a3, type: 3}
+    animationType: 2
+    animationSpeed: 1
+    createsRipple: 1
+  - name: "\u8DF3\u306D\u308B\u30AB\u30A8\u30EB"
     effect: 25
     basePrice: 3000
+    prefab: {fileID: 134833605207454182, guid: f8b3bf65491224927bea5f095af4effd, type: 3}
+    animationType: 3
+    animationSpeed: 1
+    createsRipple: 1

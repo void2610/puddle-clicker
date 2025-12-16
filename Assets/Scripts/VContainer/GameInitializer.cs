@@ -3,7 +3,7 @@ using VContainer.Unity;
 
 public class GameInitializer : IStartable
 {
-    public GameInitializer(GamePresenter gamePresenter, ShopPresenter shopPresenter)
+    public GameInitializer(GamePresenter gamePresenter, ShopPresenter shopPresenter, CompanionPresenter companionPresenter)
     {
     }
 
