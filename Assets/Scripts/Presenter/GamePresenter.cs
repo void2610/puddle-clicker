@@ -11,16 +11,18 @@ namespace PuddleClicker.Presenter
     {
         private readonly GameModel _gameModel;
         private readonly UpgradeModel _upgradeModel;
+        private readonly StatisticsModel _statisticsModel;
         private readonly PuddleView _puddleView;
         private readonly CompositeDisposable _disposables = new();
 
         // 自動生成用の蓄積時間
         private float _accumulatedTime;
 
-        public GamePresenter(GameModel gameModel, UpgradeModel upgradeModel)
+        public GamePresenter(GameModel gameModel, UpgradeModel upgradeModel, StatisticsModel statisticsModel)
         {
             _gameModel = gameModel;
             _upgradeModel = upgradeModel;
+            _statisticsModel = statisticsModel;
             _puddleView = UnityEngine.Object.FindFirstObjectByType<PuddleView>();
             var gameUIView = UnityEngine.Object.FindFirstObjectByType<GameUIView>();
 
@@ -29,10 +31,18 @@ namespace PuddleClicker.Presenter
             // UI更新
             _gameModel.Drops.Subscribe(drops => gameUIView.UpdateDropsDisplay(drops)).AddTo(_disposables);
             _gameModel.DropsPerSecond.Subscribe(dps => gameUIView.UpdateDropsPerSecondDisplay(dps)).AddTo(_disposables);
+
+            // 最高DPS更新
+            _gameModel.DropsPerSecond
+                .Subscribe(dps => _statisticsModel.UpdateMaxDps(dps))
+                .AddTo(_disposables);
         }
 
         public void Tick()
         {
+            // プレイ時間更新
+            _statisticsModel.AddPlayTime(Time.deltaTime);
+
             // 自動生成処理
             var dps = _gameModel.DropsPerSecond.CurrentValue;
             if (dps <= 0) return;
@@ -44,6 +54,7 @@ namespace PuddleClicker.Presenter
             {
                 var dropsToAdd = (long)(_accumulatedTime * dps);
                 _gameModel.AddDrops(dropsToAdd);
+                _statisticsModel.AddDropsEarned(dropsToAdd);
                 _accumulatedTime %= 1f;
             }
         }
@@ -53,6 +64,10 @@ namespace PuddleClicker.Presenter
             // しずくを獲得
             var amount = _gameModel.DropsPerClick.CurrentValue;
             _gameModel.AddDrops(amount);
+
+            // 統計更新
+            _statisticsModel.IncrementClicks();
+            _statisticsModel.AddDropsEarned(amount);
 
             // 現在の落とすものの波紋パラメータを取得
             var dropItem = _upgradeModel.GetCurrentDropItem();

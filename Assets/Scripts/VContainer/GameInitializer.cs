@@ -8,7 +8,7 @@ public class GameInitializer : IStartable
 {
     private readonly SaveService _saveService;
 
-    public GameInitializer(SaveService saveService, GamePresenter gamePresenter, ShopPresenter shopPresenter, CompanionPresenter companionPresenter)
+    public GameInitializer(SaveService saveService, GamePresenter gamePresenter, ShopPresenter shopPresenter, CompanionPresenter companionPresenter, StatisticsPresenter statisticsPresenter)
     {
         _saveService = saveService;
     }

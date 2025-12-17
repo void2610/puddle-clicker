@@ -21,6 +21,7 @@ public class MainLifetimeScope : LifetimeScope
         // Model登録
         builder.Register<GameModel>(Lifetime.Singleton);
         builder.Register<UpgradeModel>(Lifetime.Singleton);
+        builder.Register<StatisticsModel>(Lifetime.Singleton);
 
         // Service登録
         builder.Register<SaveService>(Lifetime.Singleton);
@@ -29,6 +30,7 @@ public class MainLifetimeScope : LifetimeScope
         builder.RegisterEntryPoint<GamePresenter>().AsSelf();
         builder.Register<ShopPresenter>(Lifetime.Singleton);
         builder.Register<CompanionPresenter>(Lifetime.Singleton);
+        builder.Register<StatisticsPresenter>(Lifetime.Singleton);
 
         builder.RegisterEntryPoint<GameInitializer>();
     }

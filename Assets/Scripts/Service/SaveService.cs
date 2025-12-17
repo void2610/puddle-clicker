@@ -14,15 +14,18 @@ namespace PuddleClicker.Service
         private const float AUTO_SAVE_INTERVAL = 5f;
 
         public long PendingOfflineReward { get; private set; }
+
         private readonly GameModel _gameModel;
         private readonly UpgradeModel _upgradeModel;
+        private readonly StatisticsModel _statisticsModel;
         private readonly CompositeDisposable _disposables = new();
         private readonly CancellationTokenSource _cts = new();
 
-        public SaveService(GameModel gameModel, UpgradeModel upgradeModel)
+        public SaveService(GameModel gameModel, UpgradeModel upgradeModel, StatisticsModel statisticsModel)
         {
             _gameModel = gameModel;
             _upgradeModel = upgradeModel;
+            _statisticsModel = statisticsModel;
 
             // ゲーム起動時にロード
             Load();
@@ -58,7 +61,12 @@ namespace PuddleClicker.Service
                 drops = _gameModel.Drops.CurrentValue,
                 dropItemLevel = _upgradeModel.CurrentDropItemLevel.CurrentValue,
                 companionCounts = _upgradeModel.CompanionCounts.CurrentValue,
-                lastSaveTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+                lastSaveTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                // 統計データ
+                totalDropsEarned = _statisticsModel.TotalDropsEarned.CurrentValue,
+                totalClicks = _statisticsModel.TotalClicks.CurrentValue,
+                playTime = _statisticsModel.PlayTime.CurrentValue,
+                maxDps = _statisticsModel.MaxDps.CurrentValue
             };
             DataPersistence.SaveData(SAVE_KEY, JsonUtility.ToJson(data));
         }
@@ -82,6 +90,14 @@ namespace PuddleClicker.Service
             var offlineReward = CalculateOfflineReward(data.lastSaveTimestamp);
             _gameModel.SetDrops(data.drops + offlineReward);
             PendingOfflineReward = offlineReward;
+
+            // 統計データ復元
+            _statisticsModel.SetStatistics(
+                data.totalDropsEarned,
+                data.totalClicks,
+                data.playTime,
+                data.maxDps
+            );
         }
 
         private long CalculateOfflineReward(long lastSaveTimestamp)
@@ -110,6 +126,11 @@ namespace PuddleClicker.Service
             public int dropItemLevel;
             public int[] companionCounts;
             public long lastSaveTimestamp;
+            // 統計
+            public long totalDropsEarned;
+            public long totalClicks;
+            public float playTime;
+            public float maxDps;
         }
     }
 }
