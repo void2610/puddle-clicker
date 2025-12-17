@@ -69,9 +69,7 @@ namespace PuddleClicker.Presenter
             _statisticsModel.IncrementClicks();
             _statisticsModel.AddDropsEarned(amount);
 
-            // 現在の落とすものの波紋パラメータを取得
-            var dropItem = _upgradeModel.GetCurrentDropItem();
-            _puddleView.PlayRippleEffect(position, dropItem.RippleScale, dropItem.RippleDuration, dropItem.RippleCount);
+            // TODO: 波紋発生
         }
 
         public void Dispose() => _disposables.Dispose();

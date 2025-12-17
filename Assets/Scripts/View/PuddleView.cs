@@ -7,17 +7,10 @@ namespace PuddleClicker.View
     {
         [SerializeField] private Camera renderCamera;
         [SerializeField] private Collider targetCollider;
-        [SerializeField] private RippleController rippleController;
 
         public Observable<Vector3> OnClicked => _onClicked;
 
         private readonly Subject<Vector3> _onClicked = new();
-
-        public void PlayRippleEffect(Vector3 position, float scale, float duration, int count)
-        {
-            // シェーダー波紋
-            rippleController.CreateRipple(position, scale, duration, count);
-        }
 
         private void Update()
         {

@@ -10,7 +10,6 @@ namespace PuddleClicker.View
     public class CompanionView : MonoBehaviour
     {
         [SerializeField] private Transform spawnArea;
-        [SerializeField] private RippleController rippleController;
 
         [Header("アニメーション設定")]
         [SerializeField] private float slideRadius = 3f;
@@ -70,9 +69,7 @@ namespace PuddleClicker.View
                         break;
                 }
 
-                // 波紋発生
-                if (companion.Data.CreatesRipple)
-                    rippleController.CreateRipple(companion.Instance.transform.position, 0.8f, 0.6f);
+                // TODO: 波紋発生
             }
         }
 
