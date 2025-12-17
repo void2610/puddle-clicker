@@ -4,15 +4,26 @@ using VContainer.Unity;
 using PuddleClicker.Model;
 using PuddleClicker.Presenter;
 using PuddleClicker.Service;
+using Void2610.SettingsSystem;
 
 public class MainLifetimeScope : LifetimeScope
 {
     [SerializeField] private DropItemSettings dropItemSettings;
     [SerializeField] private CompanionSettings companionSettings;
     [SerializeField] private GameBalanceSettings gameBalanceSettings;
+    
+    [Header("デバッグ")]
+    [SerializeField] private bool clearSaveOnStart; 
 
     protected override void Configure(IContainerBuilder builder)
     {
+        // セーブデータ削除
+        if (clearSaveOnStart)
+        {
+            DataPersistence.DeleteData("puddle_clicker_save"); 
+            Debug.Log("[MainLifetimeScope] セーブデータを削除しました");
+        }       
+        
         // ScriptableObject登録
         builder.RegisterInstance(dropItemSettings);
         builder.RegisterInstance(companionSettings);
